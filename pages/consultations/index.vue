@@ -9,17 +9,19 @@
             :headers="headers"
             :items="consultations"
             :items-per-page="5"
+            :loading="loading"
+            loading-text="Загрузка... Пожалуйста, подождите"
             class="elevation-1"
             @click:row="onTableRowClick"
           >
             <template v-slot:item.patient="{ item }">
               <v-list-item two-line>
                 <v-list-item-avatar>
-                  <img :src="item.patient.avatar" alt="avatar"/>
+                  <img :src="item.patient.avatar_href" alt="avatar"/>
                 </v-list-item-avatar>
                 <v-list-item-content>
-                  <v-list-item-title>{{item.patient.firstName}} {{item.patient.lastName}}</v-list-item-title>
-                  <v-list-item-subtitle>{{item.patient.lastMessage}}</v-list-item-subtitle>
+                  <v-list-item-title>{{item.patient.first_name}} {{item.patient.last_name}}</v-list-item-title>
+                  <v-list-item-subtitle>{{item.last_message.text}}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </template>
@@ -28,9 +30,9 @@
                 label
                 text-color="white"
                 small
-                :color="getStatusTagProps(item.status).color"
+                :color="item.status.color"
               >
-                {{ getStatusTagProps(item.status).text }}
+                {{ item.status.text }}
               </v-chip>
             </template>
           </v-data-table>
@@ -42,6 +44,11 @@
 <script>
 import Logo from '@/components/Logo.vue'
 import VuetifyLogo from '@/components/VuetifyLogo.vue'
+import getStatusTagProps from '../../utils/getStatusTagProps';
+import { mapActions } from 'vuex';
+import moment from 'moment';
+
+moment.locale('ru');
 
 export default {
   layout: 'app',
@@ -59,57 +66,39 @@ export default {
           value: 'patient',
           width: '20%'
         },
-        { text: 'Дата создания', value: 'createdAt' },
+        { text: 'Дата создания', value: 'created_at' },
         { text: 'Статус', value: 'status' },
-        { text: 'Запланированная консультация', value: 'scheduled' },
-        { text: 'Стоимость', value: 'cost' },
+        { text: 'Запланированная консультация', value: 'scheduled_on' },
+        { text: 'Стоимость', value: 'total_cost' },
       ],
-      consultations: [
-        {
-          guid: '73b148ce-07e6-427a-8639-9ae2b21281d2',
-          patient: {
-            firstName: 'Ирина',
-            lastName: 'Ромашкина',
-            lastMessage: 'Здравствуйте! Очень срочно нужна ваша помощь, не знаю...',
-            avatar: 'https://randomuser.me/api/portraits/women/81.jpg'
-          },
-          createdAt: '24.04.2021',
-          status: 'NEW',
-          scheduled: '29.04.2021',
-          cost: '0 рублей',
-        },
-        {
-          guid: '9205481b-54f4-4ea8-9e85-60119d17cc0c',
-          patient: {
-            firstName: 'Анна',
-            lastName: 'Иванова',
-            lastMessage: 'Спасибо вам большое за помощь снова, что бы я без...',
-            avatar: 'https://randomuser.me/api/portraits/women/85.jpg'
-          },
-          createdAt: '10.04.2021',
-          status: 'COMPLETED',
-          scheduled: '24.04.2021',
-          cost: '2450 рублей',
-        },
-      ],
+      loading: false
+    }
+  },
+  async created() {
+    this.loading = true;
+    await this.load();
+    this.loading = false;
+  },
+  computed: {
+    consultations () {
+      return this.$store.state.consultations.list.map(item => {
+        return {
+          ...item,
+          created_at: moment.unix(item.created_at).calendar(),
+          scheduled_on: moment.unix(item.scheduled_on).calendar(),
+          status: getStatusTagProps(item.status),
+          total_cost: `${item.total_cost} руб.`
+        }
+      })
     }
   },
   methods: {
-    getStatusTagProps (status) {
-      switch (status) {
-        case 'NEW':
-          return {color: 'blue', text: 'Новая'}
-        case 'POSTPONED':
-          return {color: 'yellow', text: 'Отложена'}
-        case 'COMPLETED':
-          return {color: 'green', text: 'Завершена'}
-        default:
-          return {color: 'blue', text: 'Неизвестно'}
-      }
-    },
     onTableRowClick (e) {
-      this.$router.push(`consultations/${e.guid}`);
-    }
+      this.$router.push(`consultations/${e.id}`);
+    },
+    ...mapActions({
+      load: 'consultations/load'
+    }),
   },
 }
 </script>

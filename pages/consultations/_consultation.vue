@@ -2,37 +2,39 @@
     <v-layout row no-gutters fill-height>
 
       <v-col cols="3" class="d-flex align-stretch">
-        <v-list three-line>
-          <template v-for="(item, index) in consultations">
-            <v-list-item :key="index" nuxt :to="item.guid">
-              <v-list-item-avatar>
-                <v-img :src="item.patient.avatar"></v-img>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>
-                  {{item.patient.firstName}} {{item.patient.lastName}}
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  <span class="text--primary">{{ item.patient.firstName }}</span> &mdash; {{ item.patient.lastMessage }}
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider/>
-          </template>
-        </v-list>
+        <v-flex>
+          <v-list three-line>
+            <template v-for="(item, index) in consultations">
+              <v-list-item :key="index" nuxt :to="item.id">
+                <v-list-item-avatar>
+                  <v-img :src="item.patient.avatar_href"></v-img>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title>
+                    {{ item.patient.first_name }} {{ item.patient.last_name }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    <span class="text--primary">{{ item.patient.first_name }}</span> &mdash; {{ item.last_message.text }}
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider/>
+            </template>
+          </v-list>
+        </v-flex>
       </v-col>
 
       <v-divider vertical/>
 
       <v-col class="d-flex flex-column">
         <v-row class="my-1 mx-2">
-          <v-list-item>
+          <v-list-item v-if="current.patient">
             <v-list-item-avatar>
-              <img src="https://randomuser.me/api/portraits/women/81.jpg" alt="avatar"/>
+              <img :src="current.patient.avatar_href" alt="avatar"/>
             </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title>
-                Ирина Ромашкина
+                {{ current.patient.first_name }} {{ current.patient.last_name }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 Была в сети сегодня в 9:25
@@ -113,38 +115,35 @@
             <v-list dense color="transparent">
               <v-list-item>
                 <v-list-item-content>Дата создания задачи</v-list-item-content>
-                <v-list-item-content class="align-end">24.04.2021</v-list-item-content>
+                <v-list-item-content class="align-end">{{ this.current.created_at }}</v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>Дата первого обращения</v-list-item-content>
                 <v-list-item-content class="align-end">24.04.2021</v-list-item-content>
               </v-list-item>
               <v-list-item>
-                <v-list-item-content>Общая стоимость</v-list-item-content>
-                <v-list-item-content class="align-end">0 рублей</v-list-item-content>
+                <v-list-item-content>Статус</v-list-item-content>
+                <v-list-item-content class="align-end">
+                  <div>
+                    <v-chip
+                      label
+                      text-color="white"
+                      small
+                      :color="current.status.color"
+                    >
+                      {{ current.status.text }}
+                    </v-chip>
+                  </div>
+                </v-list-item-content>
               </v-list-item>
-              <v-list-group no-action>
-                <template v-slot:activator>
-                  <v-list-item-content>Новая консультация</v-list-item-content>
-                </template>
-
-                <v-list-item>
-                  <v-list-item-content>Дата и время</v-list-item-content>
-                  <v-list-item-content class="align-end">24.04.2021 17:00</v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>Статус</v-list-item-content>
-                  <v-list-item-content class="align-end">Предоплачена</v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>Продолжительность</v-list-item-content>
-                  <v-list-item-content class="align-end">Нет данных</v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>Стоимость</v-list-item-content>
-                  <v-list-item-content class="align-end">Нет данных</v-list-item-content>
-                </v-list-item>
-              </v-list-group>
+              <v-list-item>
+                <v-list-item-content>Продолжительность</v-list-item-content>
+                <v-list-item-content class="align-end">Нет данных</v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>Стоимость</v-list-item-content>
+                <v-list-item-content class="align-end">{{ this.current.total_cost }}</v-list-item-content>
+              </v-list-item>
             </v-list>
           </v-col>
         </v-row>
@@ -154,41 +153,17 @@
 </template>
 
 <script>
-const moment = require('moment');
+import { mapActions } from 'vuex';
+import moment from 'moment';
+import getStatusTagProps from "@/utils/getStatusTagProps";
+
+moment.locale('ru');
 
 export default {
   layout: 'app',
   name: "consultation",
   data: () => ({
     message: '',
-    consultations: [
-      {
-        guid: '73b148ce-07e6-427a-8639-9ae2b21281d2',
-        patient: {
-          firstName: 'Ирина',
-          lastName: 'Ромашкина',
-          lastMessage: 'Здравствуйте! Очень срочно нужна ваша помощь, не знаю...',
-          avatar: 'https://randomuser.me/api/portraits/women/81.jpg'
-        },
-        createdAt: '24.04.2021',
-        status: 'NEW',
-        scheduled: '29.04.2021',
-        cost: '0 рублей',
-      },
-      {
-        guid: '9205481b-54f4-4ea8-9e85-60119d17cc0c',
-        patient: {
-          firstName: 'Анна',
-          lastName: 'Иванова',
-          lastMessage: 'Спасибо вам большое за помощь снова, что бы я без...',
-          avatar: 'https://randomuser.me/api/portraits/women/85.jpg'
-        },
-        createdAt: '10.04.2021',
-        status: 'COMPLETED',
-        scheduled: '24.04.2021',
-        cost: '2450 рублей',
-      },
-    ],
     conversation: [
       {
         from: {
@@ -210,6 +185,23 @@ export default {
       }
     ]
   }),
+  computed: {
+    consultations () {
+      return this.$store.state.consultations.list;
+    },
+    current () {
+      const item = { ...this.$store.state.consultations.item };
+      item.created_at = moment.unix(item.created_at).calendar();
+      item.scheduled_on = moment.unix(item.scheduled_on).calendar();
+      item.status = getStatusTagProps(item.status);
+      item.total_cost = `${item.total_cost} руб.`;
+      return item;
+    }
+  },
+  async created () {
+    await this.load();
+    await this.loadOne(this.$route.params.consultation);
+  },
   methods: {
     sendMessage () {
       this.conversation.push({
@@ -234,10 +226,11 @@ export default {
     },
     selectEmoji(emoji) {
       this.message = `${this.message}${emoji.data}`;
-    }
-  },
-  async asyncData({ params, redirect }) {
-    console.log(params.consultation);
+    },
+    ...mapActions({
+      load: 'consultations/load',
+      loadOne: 'consultations/loadOne'
+    }),
   }
 }
 </script>

@@ -38,6 +38,8 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    '@nuxtjs/axios',
+    '@nuxtjs/auth-next'
   ],
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -61,5 +63,37 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  router: {
+    middleware: ['auth']
+  },
+
+  auth: {
+    strategies: {
+      local: {
+        scheme: 'local',
+        endpoints: {
+          login: { url: '/api/v1/users/authorise', method: 'post' },
+          user: { url: '/api/v1/users/me', method: 'get' }
+        },
+        token: {
+          property: 'auth_token'
+        },
+        user: {
+          property: 'email'
+        }
+      }
+    },
+    redirect: {
+      login: '/login',
+      logout: '/',
+      callback: '/login',
+      home: '/consultations'
+    }
+  },
+
+  axios: {
+    baseURL: 'http://localhost:8000/',
   }
 }
