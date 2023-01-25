@@ -37,6 +37,7 @@ Path: `/login`
 
 ### Onboarding
 Path: `/onboarding`
+
 #### Step 1: Register with the Federal Tax Service
 <img width="1840" alt="Screenshot 2023-01-24 at 12 13 52" src="https://user-images.githubusercontent.com/17453908/214550283-f808f416-0d78-4374-9e0c-0e056712524d.png">
 
@@ -52,10 +53,14 @@ Path: `/onboarding`
 #### Step 5: Taxpayer data
 <img width="1840" alt="Screenshot 2023-01-24 at 12 16 23" src="https://user-images.githubusercontent.com/17453908/214550564-306ea665-8267-42d6-8c02-353e7c209f44.png">
 
-### Consultations list
+### Consultations List
 Path: `/consultations`
+<img width="1840" alt="Screenshot 2023-01-25 at 11 04 24" src="https://user-images.githubusercontent.com/17453908/214552763-f988ea29-842f-4a67-bd17-d3c1774187d7.png">
 
 ### Consultation
 Path: `/consultations/:consultationId`
+<img width="1840" alt="Screenshot 2023-01-25 at 11 04 30" src="https://user-images.githubusercontent.com/17453908/214552903-5ca0b695-68ac-4ca3-9837-5ec5a615bf9e.png">
+<img width="1840" alt="Screenshot 2023-01-25 at 11 09 28" src="https://user-images.githubusercontent.com/17453908/214552973-6e45c66c-338f-4591-a8a8-26816f9a3cc0.png">
+
 
 
